@@ -14,16 +14,16 @@ public class Servidor {
 	}
 	
 	public Servidor(){
-			try {
-				ServerSocket serverSocket = new ServerSocket(6001);
-				while(true){
-					Socket socket = serverSocket.accept();
-					this.listaClientes.add(new HiloCliente(socket, this));
-				}
-			 }catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			 }
+		try {
+			ServerSocket serverSocket = new ServerSocket(6001);
+			while(true){
+				Socket socket = serverSocket.accept();
+				System.out.println("se ha conectado un cliente");
+				this.listaClientes.add(new HiloCliente(socket, this));
+			}
+		 }catch (IOException e) {
+			e.printStackTrace();
+		 }
 	}
 	
 	public void enviarATodos(HiloCliente hiloCliente, String mensaje){
@@ -33,5 +33,4 @@ public class Servidor {
 			}
 		}
 	}
-
 }
