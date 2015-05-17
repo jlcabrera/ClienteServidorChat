@@ -2,12 +2,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 
 public class Servidor {
 
 	private List<HiloCliente> listaClientes = new ArrayList<HiloCliente>();
+	private List<String> clientesLogados = new LinkedList<String>();
 	
 	public static void main(String[] args) {
 		new Servidor();
@@ -26,11 +28,24 @@ public class Servidor {
 		 }
 	}
 	
-	public void enviarATodos(HiloCliente hiloCliente, String mensaje){
+	public synchronized void enviarATodos(HiloCliente hiloCliente, String mensaje){
 		for(HiloCliente hc : this.listaClientes ){
 			if (hc != hiloCliente){
 				hc.enviar(mensaje);
 			}
 		}
+	}
+	
+	public synchronized void añadirUsuairoLogado(String usuario){
+		this.clientesLogados.add(usuario);
+	}
+	
+	public synchronized boolean comprobarClienteLogado(String usuario){
+		for (String string : clientesLogados) {
+			if(string.equals(usuario)){
+				return true;
+			}
+		}
+		return false;
 	}
 }

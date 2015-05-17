@@ -19,7 +19,9 @@ public class HiloCliente implements Runnable {
 		this.socketCliente = socketCliente;
 
 		try {
+			
 			this.br = new BufferedReader(new InputStreamReader(this.socketCliente.getInputStream()));
+			
 			this.bw = new BufferedWriter(new OutputStreamWriter(this.socketCliente.getOutputStream()));
 			
 			this.bw.write("Introduzca el nombre de usuairo");
@@ -30,16 +32,23 @@ public class HiloCliente implements Runnable {
 			this.bw.write("Introduzca la contraeña");
 			this.bw.newLine();
 			this.bw.flush();
-			
+
 			String pass = this.br.readLine();
 			
-
-			if (new RegistroUsuarios().verificarUsuario(usuario, pass)) {
-				this.bw.write("El usuario y la contraseña son validos");
-				this.bw.flush();
-				new Thread(this).start();
-			} else {
-				this.bw.write("Nombre y/o usuario incorrecto");
+			if(!this.servidor.comprobarClienteLogado(usuario)){
+				this.servidor.añadirUsuairoLogado(usuario);
+				
+				if (new RegistroUsuarios().verificarUsuario(usuario, pass)) {
+					this.bw.write("El usuario y la contraseña son validos");
+					this.bw.flush();
+					new Thread(this).start();
+				} else {
+					this.bw.write("Nombre y/o usuario incorrecto");
+					this.bw.flush();
+				}
+				
+			}else{
+				this.bw.write("El usuario ya está logado");
 				this.bw.flush();
 			}
 
@@ -49,10 +58,7 @@ public class HiloCliente implements Runnable {
 		}
 	}
 
-	// Metodo get que devuelve el socket.
-	public Socket getSocketCliente() {
-		return this.socketCliente;
-	}
+	
 
 	@Override
 	public void run() {
