@@ -22,11 +22,13 @@ public class HiloCliente implements Runnable {
 			this.br = new BufferedReader(new InputStreamReader(this.socketCliente.getInputStream()));
 			this.bw = new BufferedWriter(new OutputStreamWriter(this.socketCliente.getOutputStream()));
 			
-			this.bw.write("Introduzca el nombre de usuairo \n");
+			this.bw.write("Introduzca el nombre de usuairo");
+			this.bw.newLine();
 			this.bw.flush();
 			String usuario = this.br.readLine();
 			
-			this.bw.write("Introduzca la contraeña \n" );
+			this.bw.write("Introduzca la contraeña");
+			this.bw.newLine();
 			this.bw.flush();
 			
 			String pass = this.br.readLine();
