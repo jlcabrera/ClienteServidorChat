@@ -21,7 +21,7 @@ public class RegistroUsuarios {
 		try {
 			String linea = "";
 			while((linea = this.entrada.readLine()) != null){
-				String [] line = linea.split("|");
+				String [] line = linea.split(" ");
 				if(usuario.equalsIgnoreCase(line[0]) && pass.equalsIgnoreCase(line[1])){
 					return true;
 				}
