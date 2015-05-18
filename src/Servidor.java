@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.sun.swing.internal.plaf.synth.resources.synth;
+
 
 public class Servidor {
 
@@ -38,6 +40,10 @@ public class Servidor {
 	
 	public synchronized void añadirUsuairoLogado(String usuario){
 		this.clientesLogados.add(usuario);
+	}
+	
+	public synchronized void eliminarUsuarioLogado(String usuario){
+		this.clientesLogados.remove(usuario);
 	}
 	
 	public synchronized boolean comprobarClienteLogado(String usuario){
