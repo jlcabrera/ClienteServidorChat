@@ -6,7 +6,6 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-
 public class HiloCliente implements Runnable {
 
 	private Servidor servidor;
@@ -21,87 +20,88 @@ public class HiloCliente implements Runnable {
 		this.socketCliente = socketCliente;
 
 		try {
-			
 			this.br = new BufferedReader(new InputStreamReader(this.socketCliente.getInputStream()));
 			this.socketCliente.setSoTimeout(60 * 1000);
-			
+
 			this.bw = new BufferedWriter(new OutputStreamWriter(this.socketCliente.getOutputStream()));
-			
-			this.bw.write("Introduzca el nombre de usuairo");
-			this.bw.newLine();
-			this.bw.flush();
-			this.usuario = this.br.readLine();
-			
-			this.bw.write("Introduzca la contraeña");
-			this.bw.newLine();
-			this.bw.flush();
-
-			String pass = this.br.readLine();
-			
-			if(!this.servidor.comprobarClienteLogado(this.usuario)){
-				this.servidor.añadirUsuairoLogado(this.usuario);
-				
-				if (new RegistroUsuarios().verificarUsuario(this.usuario, pass)) {
-					this.bw.write("El usuario y la contraseña son validos");
-					this.bw.newLine();
-					this.bw.flush();
-					new Thread(this).start();
-				} else {
-					this.bw.write("Nombre y/o usuario incorrecto");
-					this.bw.flush();
-				}
-				
-			}else{
-				this.bw.write("El usuario ya está logado");
-				this.bw.flush();
+			if(this.logarUsuario()){
+				new Thread(this).start();
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
-	
 
 	@Override
 	public void run() {
 		
 		try {
+			String mensaje = "Se ha conectado: " + this.usuario;
 			while (!closed) {
-				String mensaje = br.readLine();
+				mensaje = br.readLine();
 				System.out.println(mensaje);
 				this.servidor.enviarATodos(HiloCliente.this, mensaje);
 			}
-		}catch (SocketTimeoutException e){
-			try {
-				this.bw.write("Se te ha desconectado del servidor por inactividad");
-				this.bw.newLine();
-				this.bw.flush();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-		}catch (IOException e) {
+		} catch (SocketTimeoutException e) {
+			this.escribir("Se te ha desconectado del servidor por inactividad");
+		} catch (IOException e) {
 			e.printStackTrace();
-		}finally{
-			try {
+		} finally {
+			
 				this.servidor.eliminarUsuarioLogado(this.usuario);
-				this.socketCliente.close();
+				try {
+					this.socketCliente.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				this.closed = true;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+				this.servidor.eliminarListaHilos(this);;
+			
 		}
 	}
 
-	// metodo para enviar el mensaje
-	public void enviar(String text) {
+	// Metodo para escribir en el socket
+	public void escribir(String mensaje) {
 		try {
-			this.bw.write(text);
+			this.bw.write(mensaje);
 			this.bw.newLine();
 			this.bw.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
+	
+	//	Metodo para logar usuario y devolver si se ha logado o no
+	public boolean logarUsuario(){
+		boolean logado = false;
+		try {
+			for(int i = 0; i < 3; i++){
+				this.escribir("Introduzca el usuario");
+				this.usuario = this.br.readLine();
+				
+				this.escribir("Introduzca la contraseña");
+				String pass = this.br.readLine();
+				
+				if (!this.servidor.comprobarClienteLogado(this.usuario)) {
+					if (new RegistroUsuarios().verificarUsuario(this.usuario, pass)) {
+						this.escribir("El usuario y la contraseña son válidas");
+						this.servidor.añadirUsuairoLogado(this.usuario);
+						logado = true;
+						break;
+					} else {
+						this.escribir("Nombre de usuario y/o contraseña erroneos");	
+					}
+	
+				} else {
+					this.escribir("El usuairo ya está logado");
+					return logado;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return logado;
+	}
+	
 }

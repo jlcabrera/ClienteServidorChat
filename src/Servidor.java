@@ -22,7 +22,6 @@ public class Servidor {
 			ServerSocket serverSocket = new ServerSocket(6001);
 			while(true){
 				Socket socket = serverSocket.accept();
-				System.out.println("se ha conectado un cliente");
 				this.listaClientes.add(new HiloCliente(socket, this));
 			}
 		 }catch (IOException e) {
@@ -33,12 +32,13 @@ public class Servidor {
 	public synchronized void enviarATodos(HiloCliente hiloCliente, String mensaje){
 		for(HiloCliente hc : this.listaClientes ){
 			if (hc != hiloCliente){
-				hc.enviar(mensaje);
+				hc.escribir(mensaje);
 			}
 		}
 	}
 	
 	public synchronized void añadirUsuairoLogado(String usuario){
+		System.out.println("se ha conectado: " + usuario);
 		this.clientesLogados.add(usuario);
 	}
 	
@@ -53,5 +53,9 @@ public class Servidor {
 			}
 		}
 		return false;
+	}
+	
+	public void eliminarListaHilos(HiloCliente hc){
+		this.listaClientes.remove(hc);
 	}
 }
