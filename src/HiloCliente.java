@@ -14,11 +14,12 @@ public class HiloCliente implements Runnable {
 	private BufferedWriter bw;
 	private boolean closed = false;
 	private Usuario u;
+	private GestorUsuarios gu;
 
 	public HiloCliente(Socket socketCliente, Servidor server) {
 		this.servidor = server;
 		this.socketCliente = socketCliente;
-
+		this.gu = this.servidor.getGestorUsuario();
 		try {
 			this.br = new BufferedReader(new InputStreamReader(
 					this.socketCliente.getInputStream()));
@@ -36,9 +37,8 @@ public class HiloCliente implements Runnable {
 
 	@Override
 	public void run() {
-
+		String mensaje;
 		try {
-			String mensaje = "Se ha conectado: " + this.u.getNick();
 			while (!closed) {
 				mensaje = br.readLine();
 				System.out.println(mensaje);
@@ -49,15 +49,18 @@ public class HiloCliente implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-
+			
+			this.servidor.eliminarNick(this.u.getNick());
 			this.servidor.eliminarUsuarioLogado(this.u);
+			this.servidor.eliminarListaHilos(this, this.u.getNick());
+			
 			try {
 				this.socketCliente.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			this.closed = true;
-			this.servidor.eliminarListaHilos(this);
+			
 			;
 
 		}
@@ -80,35 +83,39 @@ public class HiloCliente implements Runnable {
 		try {
 			String userName = solicitarUsuarioYPass();
 			if (!userName.equals("")) {
-				escribir("Introduzca el nick que desee");
-				String nick = this.br.readLine();
-				
-				if(this.servidor.comprobarNick(nick)){
+				for(int i = 0; i < 3; i ++){
+					escribir("Introduzca el nick que desee");
+					String nick = this.br.readLine();
 					
-					Usuario user = new Usuario(userName, nick);
-					this.servidor.añadirUsuairoLogado(user);
-					logado = true;
-				}else{
-					escribir("El nick que ha seleccionado no esta disponible");
+					if(this.servidor.comprobarNick(nick)){
+						this.u = this.gu.addUsuario(userName, nick);
+						this.servidor.addNick(nick);
+						return true;
+					}else{
+						escribir("El nick que ha seleccionado no esta disponible");
+					}
 				}
 			} else {
 				this.escribir("El usuario y contraseña son erroneos o el usuario ya está logado");
-				return logado;
+				return false;
 			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
-		} 
+		}  
 		return logado;
 	}
 
 	public void solicitarNick() {
 		this.escribir("Introduzca el nick que desea usar");
-
+	}
+	
+	public Usuario getUsuario(){
+		return this.u;
 	}
 	
 	public String solicitarUsuarioYPass(){
-		boolean verificarDatos = false;
 		String usuario = "";
 		for(int i = 0; i < 3; i++){
 			
@@ -123,12 +130,18 @@ public class HiloCliente implements Runnable {
 				} else {
 					this.escribir("El usuario y contraseña son erroneos o el usuario ya está logado");
 				}
+				
 			} catch (IOException e) {
 				e.printStackTrace();
+				usuario = "";
 				return usuario;
 			}catch(NullPointerException e){
 				System.err.println("Ha introducido mal las credenciales, cuando se realiza el login se tiene que escribir el usuario y la pass en la misma linea");
-			} 
+				usuario = "";
+			}catch(ArrayIndexOutOfBoundsException e){
+				System.err.println("Ha introducido solo el nombre de usuario");
+				usuario = "";
+			}
 		}
 		
 		return usuario;
@@ -142,15 +155,20 @@ public class HiloCliente implements Runnable {
 			String nickNuevo = this.br.readLine();
 			
 			if(this.servidor.comprobarNick(nickNuevo)){
+				this.gu.setNick(nickAntiguo, nickNuevo);
 				this.servidor.enviarATodos(this, "*** el usuario " + nickAntiguo + " es ahora conocido por " + nickNuevo);
 				this.u.setNick(nickNuevo);
 			}else{
 				this.escribir("El nick que has escrito no está disponible");
+				this.socketCliente.close();
 			}
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+	}
+	
+	public void mandarMensajePrivado(String nick, String mensaje){
+		this.servidor.enviarAUsuario(nick, mensaje);
 	}
 }
