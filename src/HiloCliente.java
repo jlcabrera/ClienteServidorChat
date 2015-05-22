@@ -54,15 +54,30 @@ public class HiloCliente implements Runnable {
 			this.servidor.eliminarUsuarioLogado(this.u);
 			this.servidor.eliminarListaHilos(this, this.u.getNick());
 			
-			try {
-				this.socketCliente.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			if(this.br != null){
+				try {
+					this.br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(this.bw != null){
+				try {
+					this.bw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(this.socketCliente != null){
+				try {
+					this.socketCliente.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			this.closed = true;
-			
-			;
-
 		}
 	}
 

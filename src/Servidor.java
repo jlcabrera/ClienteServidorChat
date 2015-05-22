@@ -20,7 +20,7 @@ public class Servidor {
 		ServerSocket serverSocket = null;
 		try {
 			
-			serverSocket = new ServerSocket(6001);
+			serverSocket = new ServerSocket(6667);
 			while(true){
 				Socket socket = serverSocket.accept();
 				this.listaClientes.add(new HiloCliente(socket, this));
