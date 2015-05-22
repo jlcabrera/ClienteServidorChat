@@ -17,15 +17,24 @@ public class Servidor {
 	}
 	
 	public Servidor(){
+		ServerSocket serverSocket = null;
 		try {
 			
-			ServerSocket serverSocket = new ServerSocket(6001);
+			serverSocket = new ServerSocket(6001);
 			while(true){
 				Socket socket = serverSocket.accept();
 				this.listaClientes.add(new HiloCliente(socket, this));
 			}
 		 }catch (IOException e) {
 			e.printStackTrace();
+		 }finally{
+			 if(serverSocket != null){
+				 try {
+					serverSocket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			 }
 		 }
 	}
 	
