@@ -9,7 +9,7 @@ public class Usuario {
 		this.nick = nick;
 	}
 	
-	public String getUsuario(){
+	public String getNombreUsuario(){
 		return this.usuario;
 	}
 	

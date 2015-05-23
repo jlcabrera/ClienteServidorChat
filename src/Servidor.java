@@ -2,16 +2,15 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 
 public class Servidor {
 
 	private List<HiloCliente> listaClientes = new ArrayList<HiloCliente>();
-	private GestorUsuarios gu = new GestorUsuarios();
-	private List<String> nicksRegistrados = new ArrayList<String>();
+	private GestorUsuarios gestor = GestorUsuarios.getInstance();
 	private final String [] PALABRAS_RESERVADAS = { "nick", "msg", "login", "quit", "userlist", "ping"};
+	
 	public static void main(String[] args) {
 		new Servidor();
 	}
@@ -38,30 +37,26 @@ public class Servidor {
 		 }
 	}
 	
-	public synchronized void enviarATodos(HiloCliente hiloCliente, String mensaje){
-		for(HiloCliente hc : this.listaClientes ){
-			if (hc != hiloCliente){
-				hc.escribir(mensaje);
-			}
-		}
-	}
-	
-	public synchronized Usuario addUsuairoLogado(String usuario, String nick){
-		Usuario user = this.gu.addUsuario(usuario, nick);
+	public synchronized Usuario addUsuarioLogado(String usuario, String nick){
 		System.out.println("se ha conectado: " + nick);
-		return user;
+		return this.gestor.addUsuario(usuario, nick);
 	}
 	
 	public synchronized GestorUsuarios getGestorUsuario(){
-		return this.gu;
+		return this.gestor;
 	}
-	public synchronized void eliminarUsuarioLogado(Usuario u){
-		this.gu.eliminarUsuario(u);
+	public synchronized void eliminarUsuarioLogado(String nick){
+		this.gestor.eliminarUsuario(nick);
+	}
+	
+	public ArrayList<String> listarUsuarios(){
+		return new ArrayList<String>(this.gestor.getListaUsuarios());
 	}
 
-	public synchronized boolean comprobarClienteLogado(String usuario){
-		for (Usuario u : this.gu.getListaUsuarios()) {
-			if(u.getUsuario().equals(usuario)){
+	public synchronized boolean comprobarClienteLogado(String u){
+		ArrayList<Usuario> usuarios = new ArrayList<Usuario>(this.gestor.getUsuarios());
+		for (Usuario user : usuarios) {
+			if(u.equals(user.getNombreUsuario())){
 				return true;
 			}
 		}
@@ -80,22 +75,12 @@ public class Servidor {
 			}
 		}
 		
-		for(Usuario u : this.gu.getListaUsuarios()){
-			if(u.getNick().equalsIgnoreCase(nick)){
+		for(String nicksUsados : this.gestor.getListaUsuarios()){
+			if(nicksUsados.equalsIgnoreCase(nick)){
 				return false;
 			}
 		}
-		
 		return valido;
-	}
-	
-	//Metodos para la administracion de nicks
-	public void addNick(String nick){
-		this.nicksRegistrados.add(nick);
-	}
-	
-	public void eliminarNick(String nick){
-		this.nicksRegistrados.remove(nick);
 	}
 	
 	public void eliminarListaHilos(HiloCliente hc, String nick){
@@ -104,11 +89,23 @@ public class Servidor {
 	}
 	
 	//Metodo para enviar a un usuario los mensajes privadamente
-	public void enviarAUsuario(String nick, String mensaje){
-		for(HiloCliente hc : this.listaClientes ){
+	public boolean enviarAUsuario(String nick, String mensaje){
+		for(HiloCliente hc : this.listaClientes){
 			if(hc.getUsuario().getNick().equalsIgnoreCase(nick)){
 				hc.escribir(mensaje);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public synchronized void enviarATodos(HiloCliente hiloCliente, String mensaje){
+		for(HiloCliente hc : this.listaClientes ){
+			if (hc != hiloCliente){
+				hc.escribir(hiloCliente.getUsuario().getNick() + " : " +mensaje);
 			}
 		}
 	}
+	
+	
 }

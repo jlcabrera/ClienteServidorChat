@@ -1,35 +1,43 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeMap;
 
 
 public class GestorUsuarios {
-	private List<Usuario> clientesLogados;
 	
+	private static GestorUsuarios instance = new GestorUsuarios();
+	private TreeMap<String, Usuario> clientesLogados =  new TreeMap<String, Usuario>();
 	
 	public GestorUsuarios(){
-		this.clientesLogados = new ArrayList<Usuario>();
+	}
+	
+	public static GestorUsuarios getInstance(){
+		return instance;
 	}
 	
 	public Usuario addUsuario(String usuario, String nick){
 		Usuario user = new Usuario(usuario,nick);
-		this.clientesLogados.add(user);
+		this.clientesLogados.put(nick, user);
 		return user;
 	}
 	
-	public void eliminarUsuario(Usuario user){
-		this.clientesLogados.remove(user);
+	public void eliminarUsuario(String nick){
+		this.clientesLogados.remove(nick);
 	}
 	
-	public List<Usuario> getListaUsuarios(){
-		return this.clientesLogados;
+	public Set<String> getListaUsuarios(){
+		Set<String> ListaUsuarios = this.clientesLogados.keySet();
+		return ListaUsuarios;
 	}
 	
 	public void setNick(String nickAntiguo, String nickNuevo){
-		for(Usuario s : this.clientesLogados){
-			if(s.getNick().equalsIgnoreCase(nickAntiguo)){
-				s.setNick(nickNuevo);
-			}
-		}
+		this.clientesLogados.get(nickAntiguo).setNick(nickNuevo);
 	}
+	
+	public Collection<Usuario> getUsuarios(){
+		return this.clientesLogados.values();
+	}
+	
+	
 	
 }
