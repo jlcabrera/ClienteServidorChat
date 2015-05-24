@@ -84,7 +84,7 @@ public class Servidor {
 	}
 	
 	public void eliminarListaHilos(HiloCliente hc, String nick){
-		enviarATodos(hc, "Se ha desconectado el usuario: " + nick);
+		enviarATodos(hc, "Se ha desconectado");
 		this.listaClientes.remove(hc);
 	}
 	

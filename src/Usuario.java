@@ -18,6 +18,6 @@ public class Usuario {
 	}
 	
 	public void setNick(String nuevoNick){
-		this.usuario = nuevoNick;
+		this.nick = nuevoNick;
 	}
 }

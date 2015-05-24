@@ -31,7 +31,9 @@ public class GestorUsuarios {
 	}
 	
 	public void setNick(String nickAntiguo, String nickNuevo){
-		this.clientesLogados.get(nickAntiguo).setNick(nickNuevo);
+		Usuario user = this.clientesLogados.get(nickAntiguo);
+		this.clientesLogados.remove(nickAntiguo);
+		this.clientesLogados.put(nickNuevo, user);
 	}
 	
 	public Collection<Usuario> getUsuarios(){
