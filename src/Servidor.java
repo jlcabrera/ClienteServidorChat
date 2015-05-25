@@ -64,7 +64,10 @@ public class Servidor {
 	}
 	
 	public synchronized boolean comprobarNick(String nick){
-		boolean valido = true;
+		if(nick.isEmpty()){
+			return false;
+		}
+		
 		if(nick.contains(" ")){
 			return false;
 		}
@@ -80,7 +83,7 @@ public class Servidor {
 				return false;
 			}
 		}
-		return valido;
+		return true;
 	}
 	
 	public void eliminarListaHilos(HiloCliente hc, String nick){

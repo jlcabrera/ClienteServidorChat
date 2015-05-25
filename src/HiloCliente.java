@@ -40,7 +40,6 @@ public class HiloCliente implements Runnable {
 		try {
 			while (!closed) {
 				
-				//Modificar la logica de esto para que no se vaya de madre
 				mensaje = br.readLine();
 				detectarComando(mensaje);
 				
@@ -95,6 +94,7 @@ public class HiloCliente implements Runnable {
 					if(this.servidor.comprobarNick(nick)){
 						this.user = this.servidor.addUsuarioLogado(userName, nick );
 						this.servidor.enviarATodos(this, "El usuario " + this.user.getNick() + " se ha conectado");
+						escribir("Te has conectado al servidor");
 						return true;
 					}else{
 						escribir("El nick que ha seleccionado no esta disponible");
@@ -214,9 +214,12 @@ public class HiloCliente implements Runnable {
 				escribir("El comando escrito no es válido, escriba: \"/?\" para saber los comandos disponibles");
 			}
 		}else{
-			this.servidor.enviarATodos(this, mensaje);
-			System.out.println(this.user.getNick() +": "+mensaje);
-			
+			if(this.user != null){
+				this.servidor.enviarATodos(this, mensaje);
+				System.out.println(this.user.getNick() +": "+mensaje);
+			}else{
+				escribir("El usuario no se ha logado en el sistema");
+			}
 		}
 	}
 }
